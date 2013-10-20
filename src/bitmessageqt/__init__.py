@@ -75,6 +75,8 @@ class MyForm(QtGui.QMainWindow):
 
     str_broadcast_subscribers = '[Broadcast subscribers]'
     str_chan = '[chan]'
+    # This variable is used to delete a message from draft if the user saves this message again as draft or if he sends it 
+    deleteDraftRowIndex=-1
 
     def __init__(self, parent=None):
         QtGui.QWidget.__init__(self, parent)
@@ -196,6 +198,7 @@ class MyForm(QtGui.QMainWindow):
         ## ialqassem@masdar.ac.ae - Draft Feature
         # Popup menu for the Draft tab
         self.ui.draftContextMenuToolbar = QtGui.QToolBar()
+        # Actions
         self.actionTrashDraftMessage = self.ui.draftContextMenuToolbar.addAction(
             _translate("MainWindow", "Move to Trash"), self.on_action_DraftTrash)
         self.actionContinueWritingMessage = self.ui.draftContextMenuToolbar.addAction(_translate(
@@ -214,7 +217,7 @@ class MyForm(QtGui.QMainWindow):
 
         # Popup menu for the Your Identities tab
         self.ui.addressContextMenuToolbar = QtGui.QToolBar()
-          # Actions
+        # Actions
         self.actionNew = self.ui.addressContextMenuToolbar.addAction(_translate(
             "MainWindow", "New"), self.on_action_YourIdentitiesNew)
         self.actionEnable = self.ui.addressContextMenuToolbar.addAction(_translate(
@@ -1660,6 +1663,18 @@ class MyForm(QtGui.QMainWindow):
             self.ui.tableWidgetSubscriptions.setItem(0, 1, newItem)
 
     def click_pushButtonSend(self):
+        # If this message is stored as draft then delete it (we are going to save it as sent message) 
+        if self.deleteDraftRowIndex > -1:
+            ackdataToDelete = str(self.ui.tableWidgetDraft.item(
+                self.deleteDraftRowIndex, 3).data(Qt.UserRole).toPyObject())
+            # Delete from DB and remove the row from the UI
+            sqlExecute(
+                '''DELETE FROM sent WHERE folder='draft' AND ackdata=?''',ackdataToDelete)
+            self.ui.textEditDraftMessage.setText("")
+            self.ui.tableWidgetDraft.removeRow(self.deleteDraftRowIndex)
+            # Reset the value
+            self.deleteDraftRowIndex=-1
+        
         self.statusBar().showMessage('')
         toAddresses = str(self.ui.lineEditTo.text())
         fromAddress = str(self.ui.labelFrom.text())
@@ -1822,6 +1837,19 @@ class MyForm(QtGui.QMainWindow):
                 
     ## ialqassem@masdar.ac.ae
     def click_pushButtonSaveDraft(self):
+        # If the message was saved previously as draft then delete it
+        # TODO As enhancement I'm going to add update statement instead of deleting the row and adding it again
+        if self.deleteDraftRowIndex > -1:
+            ackdataToDelete = str(self.ui.tableWidgetDraft.item(
+                self.deleteDraftRowIndex, 3).data(Qt.UserRole).toPyObject())
+            # Delete from DB and remove the row from the UI
+            sqlExecute(
+                '''DELETE FROM sent WHERE folder='draft' AND ackdata=?''',ackdataToDelete)
+            self.ui.textEditDraftMessage.setText("")
+            self.ui.tableWidgetDraft.removeRow(self.deleteDraftRowIndex)
+            # Reset the value
+            self.deleteDraftRowIndex=-1
+            
         self.statusBar().showMessage('')
         toAddresses = str(self.ui.lineEditTo.text())
         fromAddress = str(self.ui.labelFrom.text())
@@ -2754,17 +2782,9 @@ class MyForm(QtGui.QMainWindow):
         self.ui.textEditMessage.setText(self.ui.tableWidgetDraft.item(
              currentRow, 2).data(Qt.UserRole).toPyObject())
         self.ui.lineEditSubject.setText(str(self.ui.tableWidgetDraft.item(currentRow,2).text()))
-        # In database set the folder for this message to trash 
-        ackdata = str(self.ui.tableWidgetDraft.item(
-                currentRow, 3).data(Qt.UserRole).toPyObject())
-        sqlExecute('''UPDATE sent SET folder='trash' WHERE folder='draft' and ackdata=?''', ackdata)
-       
-        if currentRow == 0:
-            self.ui.tableWidgetDraft.selectRow(currentRow)
-        else:
-            self.ui.tableWidgetDraft.selectRow(currentRow - 1)
-        # Remove the row from draft UI and direct the user to Send tab
-        self.ui.tableWidgetDraft.removeRow(currentRow)
+        # Update the value of the delete row index in order to delete this record if the user sends this message or saves it as draft again
+        self.deleteDraftRowIndex = currentRow
+        # Direct the user to send tab
         self.ui.tabWidget.setCurrentIndex(2)
         
 
