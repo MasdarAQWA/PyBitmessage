@@ -147,26 +147,17 @@ class singleWorker(threading.Thread):
         shared.broadcastToSendDataQueues((
             streamNumber, 'advertiseobject', inventoryHash))
         shared.UISignalQueue.put(('updateStatusBar', ''))
-        try:
-            shared.config.set(
-                myAddress, 'lastpubkeysendtime', str(int(time.time())))
-            with open(shared.appdata + 'keys.dat', 'wb') as configfile:
-                shared.config.write(configfile)
-        except:
-            # The user deleted the address out of the keys.dat file before this
-            # finished.
-            pass
+        shared.config.set(
+            myAddress, 'lastpubkeysendtime', str(int(time.time())))
+        with open(shared.appdata + 'keys.dat', 'wb') as configfile:
+            shared.config.write(configfile)
 
     # If this isn't a chan address, this function assembles the pubkey data,
     # does the necessary POW and sends it out. If it *is* a chan then it
     # assembles the pubkey and stores is in the pubkey table so that we can
     # send messages to "ourselves".
     def sendOutOrStoreMyV3Pubkey(self, hash): 
-        try:
-            myAddress = shared.myAddressesByHash[hash]
-        except:
-            #The address has been deleted.
-            return
+        myAddress = shared.myAddressesByHash[hash]
         if shared.safeConfigGetBoolean(myAddress, 'chan'):
             with shared.printLock:
                 print 'This is a chan address. Not sending pubkey.'
@@ -233,22 +224,14 @@ class singleWorker(threading.Thread):
         shared.broadcastToSendDataQueues((
             streamNumber, 'advertiseobject', inventoryHash))
         shared.UISignalQueue.put(('updateStatusBar', ''))
-        try:
-            shared.config.set(
-                myAddress, 'lastpubkeysendtime', str(int(time.time())))
-            with open(shared.appdata + 'keys.dat', 'wb') as configfile:
-                shared.config.write(configfile)
-        except:
-            # The user deleted the address out of the keys.dat file before this
-            # finished.
-            pass
+        shared.config.set(
+            myAddress, 'lastpubkeysendtime', str(int(time.time())))
+        with open(shared.appdata + 'keys.dat', 'wb') as configfile:
+            shared.config.write(configfile)
 
     # If this isn't a chan address, this function assembles the pubkey data,
     # does the necessary POW and sends it out. 
     def sendOutOrStoreMyV4Pubkey(self, myAddress):
-        if not shared.config.has_section(myAddress):
-            #The address has been deleted.
-            return
         if shared.safeConfigGetBoolean(myAddress, 'chan'):
             with shared.printLock:
                 print 'This is a chan address. Not sending pubkey.'
@@ -332,15 +315,10 @@ class singleWorker(threading.Thread):
         shared.broadcastToSendDataQueues((
             streamNumber, 'advertiseobject', inventoryHash))
         shared.UISignalQueue.put(('updateStatusBar', ''))
-        try:
-            shared.config.set(
-                myAddress, 'lastpubkeysendtime', str(int(time.time())))
-            with open(shared.appdata + 'keys.dat', 'wb') as configfile:
-                shared.config.write(configfile)
-        except:
-            # The user deleted the address out of the keys.dat file before this
-            # finished.
-            pass
+        shared.config.set(
+            myAddress, 'lastpubkeysendtime', str(int(time.time())))
+        with open(shared.appdata + 'keys.dat', 'wb') as configfile:
+            shared.config.write(configfile)
 
     def sendBroadcast(self):
         queryreturn = sqlQuery(

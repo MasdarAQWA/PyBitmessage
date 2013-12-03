@@ -3,8 +3,6 @@ import ConfigParser
 import sys
 import os
 import locale
-import random
-import string
 
 from namecoin import ensureNamecoinOptions
 
@@ -44,7 +42,7 @@ def loadConfig():
         # This appears to be the first time running the program; there is
         # no config file (or it cannot be accessed). Create config file.
         shared.config.add_section('bitmessagesettings')
-        shared.config.set('bitmessagesettings', 'settingsversion', '8')
+        shared.config.set('bitmessagesettings', 'settingsversion', '7')
         shared.config.set('bitmessagesettings', 'port', '8444')
         shared.config.set(
             'bitmessagesettings', 'timeformat', '%%a, %%d %%b %%Y  %%I:%%M %%p')
@@ -86,18 +84,18 @@ def loadConfig():
             'bitmessagesettings', 'maxacceptablepayloadlengthextrabytes', '0')
         shared.config.set('bitmessagesettings', 'dontconnect', 'true')
         shared.config.set('bitmessagesettings', 'userlocale', 'system')
-        shared.config.set('bitmessagesettings', 'useidenticons', 'True')
-        shared.config.set('bitmessagesettings', 'identiconsuffix', ''.join(random.choice("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz") for x in range(12))) # a twelve character pseudo-password to salt the identicons
         
-         #start:UI setting to stop trying to send messages after X days/months
+         #start:UI setting to stop trying to send messages after X hours/days/months
         shared.config.set(
-            'bitmessagesettings', 'stopresendingafterxdays', '')
+            'bitmessagesettings', 'hours', '')
         shared.config.set(
-            'bitmessagesettings', 'stopresendingafterxmonths', '')
-        #shared.config.set(
-        #    'bitmessagesettings', 'timeperiod', '-1')
+            'bitmessagesettings', 'days', '')
+        shared.config.set(
+            'bitmessagesettings', 'months', '')
+        shared.config.set(
+            'bitmessagesettings', 'timeperiod', '-1')
         #end
-
+        
         # Are you hoping to add a new option to the keys.dat file? You're in
         # the right place for adding it to users who install the software for
         # the first time. But you must also add it to the keys.dat file of
