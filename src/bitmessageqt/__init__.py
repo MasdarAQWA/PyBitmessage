@@ -56,7 +56,6 @@ except AttributeError:
 def _translate(context, text):
     return QtGui.QApplication.translate(context, text)
 
-
 class MyForm(QtGui.QMainWindow):
 
     # sound type constants
@@ -77,6 +76,7 @@ class MyForm(QtGui.QMainWindow):
     str_chan = '[chan]'
     # This variable is used to delete a message from draft if the user saves this message again as draft or if he sends it 
     deleteDraftRowIndex=-1
+
 
     def __init__(self, parent=None):
         QtGui.QWidget.__init__(self, parent)
@@ -165,13 +165,43 @@ class MyForm(QtGui.QMainWindow):
             "triggered()"), self.click_actionAbout)
         QtCore.QObject.connect(self.ui.actionHelp, QtCore.SIGNAL(
             "triggered()"), self.click_actionHelp)
+        QtCore.QObject.connect(self.ui.cleanAllButton, QtCore.SIGNAL("clicked()"), self.click_cleanAllButton)
+        
         QtCore.QObject.connect(self.ui.treeWidget, QtCore.SIGNAL("clicked()"), self.populateFolderList)
         QtCore.QObject.connect(self.ui.treeWidget, QtCore.SIGNAL("itemClicked ( QTreeWidgetItem *, int)"), self.populateFolderList)
 
+        # nur: Declaration of popup menu actions for the Inbox tab, including Sent and Draft 
+        self.ui.inboxContextMenuToolbar = QtGui.QToolBar()
+        # Actions
+        self.actionReply = self.ui.inboxContextMenuToolbar.addAction(_translate("MainWindow", "Reply"), self.on_action_InboxReply)
+        self.actionAddSenderToAddressBook = self.ui.inboxContextMenuToolbar.addAction(_translate("MainWindow", "Add sender to your Address Book"), self.on_action_InboxAddSenderToAddressBook)
+        self.actionTrashInboxMessage = self.ui.inboxContextMenuToolbar.addAction(_translate("MainWindow", "Move to Trash"), self.on_action_InboxTrash)
+        self.actionForceHtml = self.ui.inboxContextMenuToolbar.addAction(_translate("MainWindow", "View HTML code as formatted text"), self.on_action_InboxMessageForceHtml)
+        self.actionSaveMessageAs = self.ui.inboxContextMenuToolbar.addAction(_translate("MainWindow", "Save message as..."), self.on_action_InboxSaveMessageAs)
+        self.actionMarkUnread = self.ui.inboxContextMenuToolbar.addAction(_translate("MainWindow", "Mark Unread"), self.on_action_InboxMarkUnread)
+    
+        self.actionTrashSentMessage = self.ui.inboxContextMenuToolbar.addAction(_translate("MainWindow", "Move to Trash"), self.on_action_SentTrash)
+        self.actionSentClipboard = self.ui.inboxContextMenuToolbar.addAction(_translate("MainWindow", "Copy destination address to clipboard"), self.on_action_SentClipboard)
+        self.actionForceSend = self.ui.inboxContextMenuToolbar.addAction(_translate("MainWindow", "Force send"), self.on_action_ForceSend)
+    
+        self.actionTrashDraftMessage = self.ui.inboxContextMenuToolbar.addAction(_translate("MainWindow", "Move to Trash"), self.on_action_DraftTrash)
+        self.actionContinueWritingMessage = self.ui.inboxContextMenuToolbar.addAction(_translate("MainWindow", "Continue writing message"), self.on_action_DraftContinueWritingMessage)
+        self.actionSaveDraftAs = self.ui.inboxContextMenuToolbar.addAction(_translate("MainWindow", "Save message as..."), self.on_action_DraftSaveMessageAs)
+        
+        self.ui.tableWidgetInbox.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        #self.connect(self.ui.tableWidgetInbox, QtCore.SIGNAL('customContextMenuRequested(const QPoint&)'), self.on_context_menuInbox)
+        #self.connect(self.ui.tableWidgetInbox, QtCore.SIGNAL('customContextMenuRequested(const QPoint&)'), self.on_context_menuSent)
+        #self.connect(self.ui.tableWidgetInbox, QtCore.SIGNAL('customContextMenuRequested(const QPoint&)'), self.on_context_menuDraft)
+        self.popMenuInbox = QtGui.QMenu(self)
+        self.popMenuSent = QtGui.QMenu(self)
+        self.popMenuDraft = QtGui.QMenu(self)  
 
+#        nur: I commented original codes for Popup menu for Inbox, Sent and Draft; modified code is above;
+        
+        '''
         # Popup menu for the Inbox tab
         self.ui.inboxContextMenuToolbar = QtGui.QToolBar()
-          # Actions
+        # Actions
         self.actionReply = self.ui.inboxContextMenuToolbar.addAction(_translate(
             "MainWindow", "Reply"), self.on_action_InboxReply)
         self.actionAddSenderToAddressBook = self.ui.inboxContextMenuToolbar.addAction(_translate(
@@ -196,7 +226,26 @@ class MyForm(QtGui.QMainWindow):
         self.popMenuInbox.addAction(self.actionAddSenderToAddressBook)
         self.popMenuInbox.addSeparator()
         self.popMenuInbox.addAction( self.actionSaveMessageAs )
-        self.popMenuInbox.addAction( self.actionTrashInboxMessage )
+        self.popMenuInbox.addAction( self.actionTrashInboxMessage )    
+        
+        # Popup menu for the Sent page
+        self.ui.sentContextMenuToolbar = QtGui.QToolBar()
+          # Actions
+        self.actionTrashSentMessage = self.ui.sentContextMenuToolbar.addAction(_translate(
+            "MainWindow", "Move to Trash"), self.on_action_SentTrash)
+        self.actionSentClipboard = self.ui.sentContextMenuToolbar.addAction(_translate(
+            "MainWindow", "Copy destination address to clipboard"), self.on_action_SentClipboard)
+        self.actionForceSend = self.ui.sentContextMenuToolbar.addAction(_translate(
+            "MainWindow", "Force send"), self.on_action_ForceSend)
+        self.ui.tableWidgetSent.setContextMenuPolicy(
+            QtCore.Qt.CustomContextMenu)
+        self.connect(self.ui.tableWidgetSent, QtCore.SIGNAL(
+            'customContextMenuRequested(const QPoint&)'), self.on_context_menuSent)
+
+        # self.popMenuSent = QtGui.QMenu( self )
+        # self.popMenuSent.addAction( self.actionSentClipboard )
+        # self.popMenuSent.addAction( self.actionTrashSentMessage )                      
+        
         
         ## ialqassem@masdar.ac.ae - Draft Feature
         # Popup menu for the Draft tab
@@ -217,7 +266,8 @@ class MyForm(QtGui.QMainWindow):
         self.popMenuDraft.addAction(self.actionTrashDraftMessage)
         self.popMenuDraft.addAction(self.actionSaveDraftAs)
         self.popMenuDraft.addSeparator()
-
+        '''
+        
         # Popup menu for the Your Identities tab
         self.ui.addressContextMenuToolbar = QtGui.QToolBar()
         # Actions
@@ -294,7 +344,10 @@ class MyForm(QtGui.QMainWindow):
         self.popMenuSubscriptions.addAction(self.actionsubscriptionsDisable)
         self.popMenuSubscriptions.addSeparator()
         self.popMenuSubscriptions.addAction(self.actionsubscriptionsClipboard)
-
+        
+        
+        #    nur: original code;
+        '''
         # Popup menu for the Sent page
         self.ui.sentContextMenuToolbar = QtGui.QToolBar()
           # Actions
@@ -308,6 +361,7 @@ class MyForm(QtGui.QMainWindow):
             QtCore.Qt.CustomContextMenu)
         self.connect(self.ui.tableWidgetSent, QtCore.SIGNAL(
             'customContextMenuRequested(const QPoint&)'), self.on_context_menuSent)
+        '''
         # self.popMenuSent = QtGui.QMenu( self )
         # self.popMenuSent.addAction( self.actionSentClipboard )
         # self.popMenuSent.addAction( self.actionTrashSentMessage )
@@ -376,10 +430,10 @@ class MyForm(QtGui.QMainWindow):
 
         # Load Sent items from database
         self.loadSent()
-
+        
         ## ialqassem@masdar.ac.ae - Draft Feature
         # Load Draft messages from database
-        self.loadDraft()
+        #self.loadDraft()
         
         # Initialize the address book
         self.rerenderAddressBook()
@@ -493,7 +547,6 @@ class MyForm(QtGui.QMainWindow):
     #nurzhan
     
     def populateFolderList(self,event, where="", what=""):
-               
         index = self.ui.treeWidget.currentIndex();
         word = self.ui.treeWidget.model().data(index).toString();
         
@@ -501,12 +554,34 @@ class MyForm(QtGui.QMainWindow):
             self.ui.tabWidget.setCurrentIndex(0);
             self.loadInbox(where, what)
             item = self.ui.tableWidgetInbox.horizontalHeaderItem(3)
-            item.setText(QtGui.QApplication.translate("MainWindow", "Received", None, QtGui.QApplication.UnicodeUTF8))  
+            item.setText(QtGui.QApplication.translate("MainWindow", "Received", None, QtGui.QApplication.UnicodeUTF8))
             
+            self.ui.tableWidgetInbox.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+            self.disconnect(self.ui.tableWidgetInbox, QtCore.SIGNAL('customContextMenuRequested(const QPoint&)'), self.on_context_menuSent)
+            self.disconnect(self.ui.tableWidgetInbox, QtCore.SIGNAL('customContextMenuRequested(const QPoint&)'), self.on_context_menuDraft)
+            self.connect(self.ui.tableWidgetInbox, QtCore.SIGNAL('customContextMenuRequested(const QPoint&)'), self.on_context_menuInbox)
+            
+            #self.popMenuInbox = QtGui.QMenu(self)
+            self.popMenuInbox.addAction(self.actionForceHtml)
+            self.popMenuInbox.addAction(self.actionMarkUnread)
+            self.popMenuInbox.addSeparator()
+            self.popMenuInbox.addAction(self.actionReply)
+            self.popMenuInbox.addAction(self.actionAddSenderToAddressBook)
+            self.popMenuInbox.addSeparator()
+            self.popMenuInbox.addAction( self.actionSaveMessageAs )
+            self.popMenuInbox.addAction( self.actionTrashInboxMessage )
+
         elif word == 'Sent':
-            #self.ui.tabWidget.setCurrentIndex(3);
-            # populating Inbox elements with Sent information
+            self.ui.tableWidgetInbox.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+            self.disconnect(self.ui.tableWidgetInbox, QtCore.SIGNAL('customContextMenuRequested(const QPoint&)'), self.on_context_menuDraft)
+            self.disconnect(self.ui.tableWidgetInbox, QtCore.SIGNAL('customContextMenuRequested(const QPoint&)'), self.on_context_menuInbox)
+            self.connect(self.ui.tableWidgetInbox, QtCore.SIGNAL('customContextMenuRequested(const QPoint&)'), self.on_context_menuSent)            
             
+            #self.popMenuSent = QtGui.QMenu(self)
+            self.popMenuSent.addAction(self.actionSentClipboard)
+            self.popMenuSent.addAction(self.actionTrashSentMessage) 
+
+            # populating Inbox elements with Sent information            
             what = "%" + what + "%"
             if where == "To":
                 where = "toaddress"
@@ -629,29 +704,16 @@ class MyForm(QtGui.QMainWindow):
             self.ui.tableWidgetInbox.keyPressEvent = self.tableWidgetInboxKeyPressEvent
         
         elif word == 'Drafts':
-            # self.ui.tabWidget.setCurrentIndex(1);
+            self.ui.tableWidgetInbox.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+            self.disconnect(self.ui.tableWidgetInbox, QtCore.SIGNAL('customContextMenuRequested(const QPoint&)'), self.on_context_menuInbox)
+            self.disconnect(self.ui.tableWidgetInbox, QtCore.SIGNAL('customContextMenuRequested(const QPoint&)'), self.on_context_menuSent)                
+            self.connect(self.ui.tableWidgetInbox, QtCore.SIGNAL('customContextMenuRequested(const QPoint&)'), self.on_context_menuDraft)
             
-            '''
-            self.ui.inboxContextMenuToolbar = QtGui.QToolBar()
-            # Actions
-            self.actionTrashDraftMessage = self.ui.inboxContextMenuToolbar.addAction(
-                _translate("MainWindow", "Move to Trash"), self.on_action_DraftTrash)
-            self.actionContinueWritingMessage = self.ui.inboxContextMenuToolbar.addAction(_translate(
-                "MainWindow", "Continue writing message"), self.on_action_DraftContinueWritingMessage)
-            self.actionSaveDraftAs = self.ui.inboxContextMenuToolbar.addAction(_translate(
-                "MainWindow", "Save message as..."), self.on_action_DraftSaveMessageAs)
-            self.ui.tableWidgetInbox.setContextMenuPolicy(
-             QtCore.Qt.CustomContextMenu)
-            self.connect(self.ui.tableWidgetInbox, QtCore.SIGNAL(
-                'customContextMenuRequested(const QPoint&)'), self.on_context_menuDraft)
-            self.popMenuInbox = QtGui.QMenu(self)
-            self.popMenuInbox.addAction(self.actionContinueWritingMessage)
-            self.popMenuInbox.addAction(self.actionTrashDraftMessage)
-            self.popMenuInbox.addAction(self.actionSaveDraftAs)
-            self.popMenuInbox.addSeparator()
-            '''
-            
-            # populating inbox elements with draft information            
+            self.popMenuDraft.addAction(self.actionContinueWritingMessage)
+            self.popMenuDraft.addAction(self.actionTrashDraftMessage)
+            self.popMenuDraft.addAction(self.actionSaveDraftAs)
+            self.popMenuDraft.addSeparator()    
+            # nur: populating inbox elements with draft information            
             what = "%" + what + "%"
             if where == "To":
                 where = "toaddress"
@@ -833,20 +895,21 @@ class MyForm(QtGui.QMainWindow):
     # Show the program window and select send tab
     def appIndicatorSend(self):
         self.appIndicatorShow()
-        self.ui.tabWidget.setCurrentIndex(2)
+        self.ui.tabWidget.setCurrentIndex(1)
 
     # Show the program window and select subscriptions tab
     def appIndicatorSubscribe(self):
         self.appIndicatorShow()
-        self.ui.tabWidget.setCurrentIndex(5)
+        self.ui.tabWidget.setCurrentIndex(3)
 
     # Show the program window and select the address book tab
     def appIndicatorAddressBook(self):
         self.appIndicatorShow()
-        self.ui.tabWidget.setCurrentIndex(6)
+        self.ui.tabWidget.setCurrentIndex(4)
 
     # Load Sent items from database
     def loadSent(self, where="", what=""):
+
         what = "%" + what + "%"
         if where == "To":
             where = "toaddress"
@@ -864,10 +927,9 @@ class MyForm(QtGui.QMainWindow):
             FROM sent WHERE folder="sent" AND %s LIKE ? 
             ORDER BY lastactiontime
             ''' % (where,)
-
         while self.ui.tableWidgetSent.rowCount() > 0:
             self.ui.tableWidgetSent.removeRow(0)
-
+        
         queryreturn = sqlQuery(sqlStatement, what)
         for row in queryreturn:
             toAddress, fromAddress, subject, message, status, ackdata, lastactiontime= row
@@ -887,7 +949,7 @@ class MyForm(QtGui.QMainWindow):
             if queryreturn != []:
                 for row in queryreturn:
                     toLabel, = row
-
+                    
             self.ui.tableWidgetSent.insertRow(0)
             if toLabel == '':
                 newItem = QtGui.QTableWidgetItem(unicode(toAddress, 'utf-8'))
@@ -898,6 +960,7 @@ class MyForm(QtGui.QMainWindow):
             newItem.setData(Qt.UserRole, str(toAddress))
             newItem.setFlags(
                 QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            
             self.ui.tableWidgetSent.setItem(0, 0, newItem)
             if fromLabel == '':
                 newItem = QtGui.QTableWidgetItem(
@@ -964,6 +1027,137 @@ class MyForm(QtGui.QMainWindow):
             self.ui.tableWidgetSent.setItem(0, 3, newItem)
         self.ui.tableWidgetSent.sortItems(3, Qt.DescendingOrder)
         self.ui.tableWidgetSent.keyPressEvent = self.tableWidgetSentKeyPressEvent
+  
+#    nur: the same load function but changed for loading to the lements of inbox.
+#         I kept old function just in case if some one will need it.
+    def loadSentForSearch (self, where="", what=""):
+
+        what = "%" + what + "%"
+        if where == "To":
+            where = "toaddress"
+        elif where == "From":
+            where = "fromaddress"
+        elif where == "Subject":
+            where = "subject"
+        elif where == "Message":
+            where = "message"
+        else:
+            where = "toaddress || fromaddress || subject || message"
+
+        sqlStatement = '''
+            SELECT toaddress, fromaddress, subject, message, status, ackdata, lastactiontime
+            FROM sent WHERE folder="sent" AND %s LIKE ? 
+            ORDER BY lastactiontime
+            ''' % (where,)
+        #while self.ui.tableWidgetSent.rowCount() > 0:
+        #    self.ui.tableWidgetSent.removeRow(0)
+        while self.ui.tableWidgetInbox.rowCount() > 0:
+            self.ui.tableWidgetInbox.removeRow(0)
+        
+        queryreturn = sqlQuery(sqlStatement, what)
+        for row in queryreturn:
+            toAddress, fromAddress, subject, message, status, ackdata, lastactiontime= row
+            subject = shared.fixPotentiallyInvalidUTF8Data(subject)
+            message = shared.fixPotentiallyInvalidUTF8Data(message)
+            try:
+                fromLabel = shared.config.get(fromAddress, 'label')
+            except:
+                fromLabel = ''
+            if fromLabel == '':
+                fromLabel = fromAddress
+
+            toLabel = ''
+            queryreturn = sqlQuery(
+                '''select label from addressbook where address=?''', toAddress)
+
+            if queryreturn != []:
+                for row in queryreturn:
+                    toLabel, = row
+                    
+            self.ui.tableWidgetInbox.insertRow(0)
+            #self.ui.tableWidgetSent.insertRow(0)
+            if toLabel == '':
+                newItem = QtGui.QTableWidgetItem(unicode(toAddress, 'utf-8'))
+                newItem.setToolTip(unicode(toAddress, 'utf-8'))
+            else:
+                newItem = QtGui.QTableWidgetItem(unicode(toLabel, 'utf-8'))
+                newItem.setToolTip(unicode(toLabel, 'utf-8'))
+            newItem.setData(Qt.UserRole, str(toAddress))
+            newItem.setFlags(
+                QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            
+            self.ui.tableWidgetInbox.setItem(0, 0, newItem)
+            #self.ui.tableWidgetSent.setItem(0, 0, newItem)
+            if fromLabel == '':
+                newItem = QtGui.QTableWidgetItem(
+                    unicode(fromAddress, 'utf-8'))
+                newItem.setToolTip(unicode(fromAddress, 'utf-8'))
+            else:
+                newItem = QtGui.QTableWidgetItem(unicode(fromLabel, 'utf-8'))
+                newItem.setToolTip(unicode(fromLabel, 'utf-8'))
+            newItem.setData(Qt.UserRole, str(fromAddress))
+            newItem.setFlags(
+                QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            #self.ui.tableWidgetSent.setItem(0, 1, newItem)
+            self.ui.tableWidgetInbox.setItem(0, 1, newItem)
+            newItem = QtGui.QTableWidgetItem(unicode(subject, 'utf-8'))
+            newItem.setToolTip(unicode(subject, 'utf-8'))
+            newItem.setData(Qt.UserRole, unicode(message, 'utf-8)'))
+            newItem.setFlags(
+                QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            #self.ui.tableWidgetSent.setItem(0, 2, newItem)
+            self.ui.tableWidgetInbox.setItem(0, 2, newItem)
+            if status == 'awaitingpubkey':
+                statusText = _translate(
+                    "MainWindow", "Waiting on their encryption key. Will request it again soon.")
+            elif status == 'doingpowforpubkey':
+                statusText = _translate(
+                    "MainWindow", "Encryption key request queued.")
+            elif status == 'msgqueued':
+                statusText = _translate(
+                    "MainWindow", "Queued.")
+            elif status == 'msgsent':
+                statusText = _translate("MainWindow", "Message sent. Waiting on acknowledgement. Sent at %1").arg(
+                    unicode(strftime(shared.config.get('bitmessagesettings', 'timeformat'), localtime(lastactiontime)),'utf-8'))
+            elif status == 'msgsentnoackexpected':
+                statusText = _translate("MainWindow", "Message sent. Sent at %1").arg(
+                    unicode(strftime(shared.config.get('bitmessagesettings', 'timeformat'), localtime(lastactiontime)),'utf-8'))
+            elif status == 'doingmsgpow':
+                statusText = _translate(
+                    "MainWindow", "Need to do work to send message. Work is queued.")
+            elif status == 'ackreceived':
+                statusText = _translate("MainWindow", "Acknowledgement of the message received %1").arg(
+                    unicode(strftime(shared.config.get('bitmessagesettings', 'timeformat'), localtime(lastactiontime)),'utf-8'))
+            elif status == 'broadcastqueued':
+                statusText = _translate(
+                    "MainWindow", "Broadcast queued.")
+            elif status == 'broadcastsent':
+                statusText = _translate("MainWindow", "Broadcast on %1").arg(unicode(strftime(
+                    shared.config.get('bitmessagesettings', 'timeformat'), localtime(lastactiontime)),'utf-8'))
+            elif status == 'toodifficult':
+                statusText = _translate("MainWindow", "Problem: The work demanded by the recipient is more difficult than you are willing to do. %1").arg(
+                    unicode(strftime(shared.config.get('bitmessagesettings', 'timeformat'), localtime(lastactiontime)),'utf-8'))
+            elif status == 'badkey':
+                statusText = _translate("MainWindow", "Problem: The recipient\'s encryption key is no good. Could not encrypt message. %1").arg(
+                    unicode(strftime(shared.config.get('bitmessagesettings', 'timeformat'), localtime(lastactiontime)),'utf-8'))
+            elif status == 'forcepow':
+                statusText = _translate(
+                    "MainWindow", "Forced difficulty override. Send should start soon.")
+            else:
+                statusText = _translate("MainWindow", "Unknown status: %1 %2").arg(status).arg(unicode(
+                    strftime(shared.config.get('bitmessagesettings', 'timeformat'), localtime(lastactiontime)),'utf-8'))
+            newItem = myTableWidgetItem(statusText)
+            newItem.setToolTip(statusText)
+            newItem.setData(Qt.UserRole, QByteArray(ackdata))
+            newItem.setData(33, int(lastactiontime))
+            newItem.setFlags(
+                QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            #self.ui.tableWidgetSent.setItem(0, 3, newItem)
+            self.ui.tableWidgetInbox.setItem(0, 3, newItem) 
+        #self.ui.tableWidgetSent.sortItems(3, Qt.DescendingOrder)
+        #self.ui.tableWidgetSent.keyPressEvent = self.tableWidgetSentKeyPressEvent
+        self.ui.tableWidgetInbox.sortItems(3, Qt.DescendingOrder)
+        self.ui.tableWidgetInbox.keyPressEvent = self.tableWidgetInboxKeyPressEvent
 
     # Load inbox from messages database file
     
@@ -1071,8 +1265,7 @@ class MyForm(QtGui.QMainWindow):
         self.ui.tableWidgetInbox.sortItems(3, Qt.DescendingOrder)
         self.ui.tableWidgetInbox.keyPressEvent = self.tableWidgetInboxKeyPressEvent
     
-    
-    
+
     ## ialqassem@masdar.ac.ae - Draft Feature    
     # Load draft messages from database file
     def loadDraft(self, where="", what=""):
@@ -1087,13 +1280,12 @@ class MyForm(QtGui.QMainWindow):
             where = "message"
         else:
             where = "toaddress || fromaddress || subject || message"
-
+        
         sqlStatement = '''
             SELECT toaddress, fromaddress, subject, message, lastactiontime, ackdata 
             FROM sent WHERE folder="draft" AND %s LIKE ? 
             ORDER BY lastactiontime
             ''' % (where,)
-
         while self.ui.tableWidgetDraft.rowCount() > 0:
             self.ui.tableWidgetDraft.removeRow(0)
 
@@ -1171,6 +1363,107 @@ class MyForm(QtGui.QMainWindow):
             self.ui.tableWidgetDraft.setItem(0, 3, newItem)
         self.ui.tableWidgetDraft.sortItems(3, Qt.DescendingOrder)
         self.ui.tableWidgetDraft.keyPressEvent = self.tableWidgetDraftKeyPressEvent
+
+
+
+#    nur: the same load function but changed for loading to the elements of inbox.
+#         I kept old function just in case if some one will need it.
+    def loadDraftForSearch(self, where="", what=""):
+        what = "%" + what + "%"
+        if where == "To":
+            where = "toaddress"
+        elif where == "From":
+            where = "fromaddress"
+        elif where == "Subject":
+            where = "subject"
+        elif where == "Message":
+            where = "message"
+        else:
+            where = "toaddress || fromaddress || subject || message"
+
+        sqlStatement = '''
+            SELECT toaddress, fromaddress, subject, message, lastactiontime, ackdata 
+            FROM sent WHERE folder="draft" AND %s LIKE ? 
+            ORDER BY lastactiontime
+            ''' % (where,)
+
+        while self.ui.tableWidgetInbox.rowCount() > 0:
+            self.ui.tableWidgetInbox.removeRow(0)
+
+        queryreturn = sqlQuery(sqlStatement, what)
+        for row in queryreturn:
+            toAddress, fromAddress, subject, message, lastactiontime, ackdata = row
+            self.ui.tableWidgetInbox.insertRow(0)
+            subject = shared.fixPotentiallyInvalidUTF8Data(subject)
+            message = shared.fixPotentiallyInvalidUTF8Data(message)
+        
+            try:
+                fromLabel = shared.config.get(fromAddress, 'label')
+            except:
+                fromLabel = ''
+                if fromLabel == '':
+                    fromLabel = fromAddress
+            
+            toAddressLabel = ''
+            if toAddress != '':
+                toAddressesList = [s.strip()
+                               for s in toAddress.replace(',', ';').split(';')]
+                # Remove duplicate addresses
+                toAddressesList = list(set(toAddressesList)) 
+                for address in toAddressesList:
+                    if address != '':
+                        queryreturn = sqlQuery('''select label from addressbook where address=?''',address)
+                        if queryreturn != []:
+                            for row in queryreturn:
+                                toLabel, = row
+                                if toAddressLabel != '':
+                                    toAddressLabel = toAddressLabel + ' ' +toLabel
+                                else:
+                                    toAddressLabel = toLabel
+            if toAddressLabel == '':
+                newItem = QtGui.QTableWidgetItem(unicode(toAddress, 'utf-8'))
+                newItem.setToolTip(unicode(toAddress, 'utf-8'))
+            else:
+                toAddressLabel = ', '.join(toAddressLabel.split(' '))
+                newItem = QtGui.QTableWidgetItem(unicode(toAddressLabel, 'utf-8'))
+                newItem.setToolTip(unicode(toAddressLabel, 'utf-8'))
+        
+            newItem.setData(Qt.UserRole, str(toAddress))
+            newItem.setFlags(
+                 QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            self.ui.tableWidgetInbox.setItem(0, 0, newItem)
+
+            if fromLabel == '':
+                newItem = QtGui.QTableWidgetItem(
+                unicode(fromAddress, 'utf-8'))
+                newItem.setToolTip(unicode(fromAddress, 'utf-8'))
+            else:
+                newItem = QtGui.QTableWidgetItem(unicode(fromLabel, 'utf-8'))
+                newItem.setToolTip(unicode(fromLabel, 'utf-8'))
+
+            newItem.setData(Qt.UserRole, str(fromAddress))
+            newItem.setFlags(
+                QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            self.ui.tableWidgetInbox.setItem(0, 1, newItem)
+
+            newItem = QtGui.QTableWidgetItem(unicode(subject, 'utf-8'))
+            newItem.setToolTip(unicode(subject, 'utf-8'))
+            newItem.setData(Qt.UserRole, unicode(message, 'utf-8)'))
+            newItem.setFlags(
+                QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            self.ui.tableWidgetInbox.setItem(0, 2, newItem)
+    
+            newItem = myTableWidgetItem(unicode(strftime(shared.config.get(
+                    'bitmessagesettings', 'timeformat'), localtime(int(lastactiontime))), 'utf-8'))
+            newItem.setToolTip(unicode(strftime(shared.config.get(
+                    'bitmessagesettings', 'timeformat'), localtime(int(lastactiontime))), 'utf-8'))
+            newItem.setData(Qt.UserRole, QByteArray(ackdata))
+            newItem.setData(33, int(lastactiontime))
+            newItem.setFlags(
+                    QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            self.ui.tableWidgetInbox.setItem(0, 3, newItem)
+        self.ui.tableWidgetInbox.sortItems(3, Qt.DescendingOrder)
+        self.ui.tableWidgetInbox.keyPressEvent = self.tableWidgetInboxKeyPressEvent
 
     # create application indicator
    
@@ -1496,13 +1789,21 @@ class MyForm(QtGui.QMainWindow):
     def tableWidgetSentKeyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Delete:
             self.on_action_SentTrash()
-        return QtGui.QTableWidget.keyPressEvent(self.ui.tableWidgetSent, event)
+        return QtGui.QTableWidget.keyPressEvent(self.ui.tableWidgetInbox, event)
+        #return QtGui.QTableWidget.keyPressEvent(self.ui.tableWidgetSent, event)
     
     ## ialqassem@masdar.ac.ae
     def tableWidgetDraftKeyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Delete:
             self.on_action_DraftTrash()
+        return QtGui.QTableWidget.keyPressEvent(self.ui.tableWidgetInbox, event)
+    
+        #    nur: commented code is Isra's original Draft tab code. I copied and changed it to use for Inbox elements
+        '''
+        if event.key() == QtCore.Qt.Key_Delete:
+            self.on_action_DraftTrash()
         return QtGui.QTableWidget.keyPressEvent(self.ui.tableWidgetDraft, event)
+        '''
 
     def click_actionManageKeys(self):
         if 'darwin' in sys.platform or 'linux' in sys.platform:
@@ -1926,17 +2227,28 @@ class MyForm(QtGui.QMainWindow):
             if not enabled:
                 newItem.setTextColor(QtGui.QColor(128, 128, 128))
             self.ui.tableWidgetSubscriptions.setItem(0, 1, newItem)
+    def click_cleanAllButton(self):
+        self.ui.radioButtonSpecific.setChecked(True)
+        self.ui.radioButtonBroadcast.setChecked(False)
+        self.ui.comboBoxSendFrom.setCurrentIndex(0)
+        self.ui.labelFrom.setText('')
+        self.ui.lineEditTo.setText('')
+        self.ui.lineEditSubject.setText('')
+        self.ui.textEditMessage.setText('')
+        self.ui.labelSendBroadcastWarning.setText('')
 
+        
+        
     def click_pushButtonSend(self):
         # If this message is stored as draft then delete it (we are going to save it as sent message) 
         if self.deleteDraftRowIndex > -1:
-            ackdataToDelete = str(self.ui.tableWidgetDraft.item(
+            ackdataToDelete = str(self.ui.tableWidgetInbox.item(
                 self.deleteDraftRowIndex, 3).data(Qt.UserRole).toPyObject())
             # Delete from DB and remove the row from the UI
             sqlExecute(
                 '''DELETE FROM sent WHERE folder='draft' AND ackdata=?''',ackdataToDelete)
-            self.ui.textEditDraftMessage.setText("")
-            self.ui.tableWidgetDraft.removeRow(self.deleteDraftRowIndex)
+            self.ui.textEditInboxMessage.setText("")
+            self.ui.tableWidgetInbox.removeRow(self.deleteDraftRowIndex)
             # Reset the value
             self.deleteDraftRowIndex=-1
         
@@ -2032,7 +2344,7 @@ class MyForm(QtGui.QMainWindow):
                         self.ui.lineEditSubject.setText('')
                         self.ui.textEditMessage.setText('')
                         self.ui.tabWidget.setCurrentIndex(0)
-                        self.ui.tableWidgetSent.setCurrentCell(0, 0)
+                        self.ui.tableWidgetInbox.setCurrentCell(0, 0)
                 else:
                     self.statusBar().showMessage(_translate(
                         "MainWindow", "Your \'To\' field is empty."))
@@ -2089,7 +2401,7 @@ class MyForm(QtGui.QMainWindow):
                 newItem.setData(33, int(time.time()))
                 self.ui.tableWidgetSent.setItem(0, 3, newItem)
 
-                self.ui.textEditSentMessage.setPlainText(
+                self.ui.textEditInboxMessage.setPlainText(
                     self.ui.tableWidgetSent.item(0, 2).data(Qt.UserRole).toPyObject())
 
                 self.ui.comboBoxSendFrom.setCurrentIndex(0)
@@ -2099,19 +2411,18 @@ class MyForm(QtGui.QMainWindow):
                 self.ui.textEditMessage.setText('')
                 self.ui.tabWidget.setCurrentIndex(0)
                 self.ui.tableWidgetSent.setCurrentCell(0, 0)
-                
-    ## ialqassem@masdar.ac.ae
+     ## ialqassem@masdar.ac.ae
     def click_pushButtonSaveDraft(self):
         # If the message was saved previously as draft then delete it
         # TODO As enhancement I'm going to add update statement instead of deleting the row and adding it again
         if self.deleteDraftRowIndex > -1:
-            ackdataToDelete = str(self.ui.tableWidgetDraft.item(
+            ackdataToDelete = str(self.ui.tableWidgetInbox.item(
                 self.deleteDraftRowIndex, 3).data(Qt.UserRole).toPyObject())
             # Delete from DB and remove the row from the UI
             sqlExecute(
                 '''DELETE FROM sent WHERE folder='draft' AND ackdata=?''',ackdataToDelete)
-            self.ui.textEditDraftMessage.setText("")
-            self.ui.tableWidgetDraft.removeRow(self.deleteDraftRowIndex)
+            self.ui.textEditInboxMessage.setText("")
+            self.ui.tableWidgetInbox.removeRow(self.deleteDraftRowIndex)
             # Reset the value
             self.deleteDraftRowIndex=-1
             
@@ -2146,6 +2457,69 @@ class MyForm(QtGui.QMainWindow):
             2)
         self.displayNewDraftMessage(toAddresses, fromAddress, subject, message,ackdata)
         ## To display message text in the textarea
+        self.ui.textEditInboxMessage.setPlainText(
+            self.ui.tableWidgetInbox.item(0, 2).data(Qt.UserRole).toPyObject())
+    
+        #3. Empty all fields at send tab
+        self.ui.comboBoxSendFrom.setCurrentIndex(0)
+        self.ui.labelFrom.setText('')
+        self.ui.lineEditTo.setText('')
+        self.ui.lineEditSubject.setText('')
+        self.ui.textEditMessage.setText('')
+        self.ui.tabWidget.setCurrentIndex(0)
+        #4. Direct the user to Draft tab
+        self.ui.tableWidgetInbox.setCurrentCell(0, 0)
+    '''            
+    ## ialqassem@masdar.ac.ae
+    def click_pushButtonSaveDraft(self):
+        # If the message was saved previously as draft then delete it
+        # TODO As enhancement I'm going to add update statement instead of deleting the row and adding it again
+        if self.deleteDraftRowIndex > -1:
+            ackdataToDelete = str(self.ui.tableWidgetDraft.item(
+                self.deleteDraftRowIndex, 3).data(Qt.UserRole).toPyObject())
+            # Delete from DB and remove the row from the UI
+            sqlExecute(
+    '''
+       #         '''DELETE FROM sent WHERE folder='draft' AND ackdata=?''',ackdataToDelete)
+    '''
+            self.ui.textEditDraftMessage.setText("")
+            self.ui.tableWidgetDraft.removeRow(self.deleteDraftRowIndex)
+            # Reset the value
+            self.deleteDraftRowIndex=-1
+            
+        self.statusBar().showMessage('')
+        toAddresses = str(self.ui.lineEditTo.text())
+        fromAddress = str(self.ui.labelFrom.text())
+        subject = str(self.ui.lineEditSubject.text().toUtf8())
+        message = str(self.ui.textEditMessage.document().toPlainText().toUtf8())
+        
+        # If all fields are empty then don't save anything
+        if (toAddresses == '' and  fromAddress == ''  and subject == '' and message == ''):
+            self.statusBar().showMessage('All fields are empty, this message will not be saved to draft folder.')
+            return
+        
+        #1. Add a new entry to sent table and set folder to draft
+        currentTime =int(time.time())
+        ackdata = OpenSSL.rand(32)
+        sqlExecute(
+    '''        
+          #  '''INSERT INTO sent VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)''',
+    '''
+            '',
+            toAddresses,
+            '',
+            fromAddress,
+            subject,
+            message,
+            ackdata,
+            currentTime,
+            '',
+            0,
+            0,
+            'draft',
+            2)
+        self.displayNewDraftMessage(toAddresses, fromAddress, subject, message,ackdata)
+        ## To display message text in the textarea
         self.ui.textEditDraftMessage.setPlainText(
             self.ui.tableWidgetDraft.item(0, 2).data(Qt.UserRole).toPyObject())
     
@@ -2158,7 +2532,7 @@ class MyForm(QtGui.QMainWindow):
         self.ui.tabWidget.setCurrentIndex(1)
         #4. Direct the user to Draft tab
         self.ui.tableWidgetDraft.setCurrentCell(0, 0)
-
+    '''    
     def click_pushButtonLoadFromAddressBook(self):
         self.ui.tabWidget.setCurrentIndex(4)
         for i in range(4):
@@ -2215,6 +2589,78 @@ class MyForm(QtGui.QMainWindow):
     def displayNewDraftMessage(self, toAddress, fromAddress, subject, message, ackdata ):
         subject = shared.fixPotentiallyInvalidUTF8Data(subject)
         message = shared.fixPotentiallyInvalidUTF8Data(message)
+        self.ui.tableWidgetInbox.setSortingEnabled(False)
+        self.ui.tableWidgetInbox.insertRow(0)
+        #To
+        toAddressLabel = ''
+        if toAddress != '':
+            toAddressesList = [s.strip()
+                   for s in toAddress.replace(',', ';').split(';')]
+            # Remove duplicate addresses
+            toAddressesList = list(set(toAddressesList)) 
+            for address in toAddressesList:
+                if address != '':
+                    queryreturn = sqlQuery('''select label from addressbook where address=?''',address)
+                    if queryreturn != []:
+                        for row in queryreturn:
+                            toLabel, = row
+                            if toAddressLabel != '':
+                                toAddressLabel = toAddressLabel + ' ' +toLabel
+                            else:
+                                toAddressLabel = toLabel
+            
+        
+        if toAddressLabel == '':
+            newItem = QtGui.QTableWidgetItem(unicode(toAddress, 'utf-8'))
+            newItem.setToolTip(unicode(toAddress, 'utf-8'))
+        else:
+            toAddressLabel = ', '.join(toAddressLabel.split(' '))
+            newItem = QtGui.QTableWidgetItem(unicode(toAddressLabel, 'utf-8'))
+            newItem.setToolTip(unicode(toAddressLabel, 'utf-8'))
+          
+        newItem.setData(Qt.UserRole, str(toAddress))
+        self.ui.tableWidgetInbox.setItem(0, 0, newItem)
+        #From
+        try:
+            fromLabel = shared.config.get(fromAddress, 'label')
+        except:
+            fromLabel = ''
+        if fromLabel == '':
+            fromLabel = fromAddress
+        if fromLabel == '':
+            newItem = QtGui.QTableWidgetItem(unicode(fromAddress, 'utf-8'))
+            newItem.setToolTip(unicode(fromAddress, 'utf-8'))
+        else:
+            newItem = QtGui.QTableWidgetItem(unicode(fromLabel, 'utf-8'))
+            newItem.setToolTip(unicode(fromLabel, 'utf-8'))
+            
+        newItem.setData(Qt.UserRole, str(fromAddress))
+        self.ui.tableWidgetInbox.setItem(0, 1, newItem)
+        #Subject
+        newItem = QtGui.QTableWidgetItem(unicode(subject, 'utf-8)'))
+        newItem.setToolTip(unicode(subject, 'utf-8)'))
+        #Messag
+        newItem.setData(Qt.UserRole, unicode(message, 'utf-8)'))
+        self.ui.tableWidgetInbox.setItem(0, 2, newItem)
+        
+        #self.statusBar().showMessage('Draft saved')
+        newItem = myTableWidgetItem(unicode(strftime(shared.config.get(
+            'bitmessagesettings', 'timeformat'), localtime(int(time.time()))), 'utf-8'))
+        newItem.setToolTip(unicode(strftime(shared.config.get(
+            'bitmessagesettings', 'timeformat'), localtime(int(time.time()))), 'utf-8'))
+        newItem.setData(Qt.UserRole, QByteArray(ackdata))
+        newItem.setData(33, localtime(int(time.time())))
+        self.ui.tableWidgetInbox.setItem(0, 3, newItem)
+        self.ui.textEditInboxMessage.setPlainText(
+            self.ui.tableWidgetInbox.item(0, 2).data(Qt.UserRole).toPyObject())
+        self.ui.tableWidgetInbox.setSortingEnabled(True)
+    
+    
+    '''
+    ## ialqassem@masdar.ac.ae
+    def displayNewDraftMessage(self, toAddress, fromAddress, subject, message, ackdata ):
+        subject = shared.fixPotentiallyInvalidUTF8Data(subject)
+        message = shared.fixPotentiallyInvalidUTF8Data(message)
         self.ui.tableWidgetDraft.setSortingEnabled(False)
         self.ui.tableWidgetDraft.insertRow(0)
         #To
@@ -2226,7 +2672,9 @@ class MyForm(QtGui.QMainWindow):
             toAddressesList = list(set(toAddressesList)) 
             for address in toAddressesList:
                 if address != '':
-                    queryreturn = sqlQuery('''select label from addressbook where address=?''',address)
+    '''
+                  #  queryreturn = sqlQuery('''select label from addressbook where address=?''',address)
+    '''
                     if queryreturn != []:
                         for row in queryreturn:
                             toLabel, = row
@@ -2280,7 +2728,7 @@ class MyForm(QtGui.QMainWindow):
         self.ui.textEditDraftMessage.setPlainText(
             self.ui.tableWidgetDraft.item(0, 2).data(Qt.UserRole).toPyObject())
         self.ui.tableWidgetDraft.setSortingEnabled(True)
-
+    '''
 
     # This function is called by the processmsg function when that function
     # receives a message to an address that is acting as a
@@ -2909,15 +3357,15 @@ class MyForm(QtGui.QMainWindow):
         self.ui.comboBoxSendFrom.setCurrentIndex(0)
         # self.ui.comboBoxSendFrom.setEditText(str(self.ui.tableWidgetInbox.item(currentInboxRow,0).text))
         self.ui.textEditMessage.setText('\n\n------------------------------------------------------\n' + self.ui.tableWidgetInbox.item(
-            currentInboxRow, 2).data(Qt.UserRole).toPyObject())
-        if self.ui.tableWidgetInbox.item(currentInboxRow, 2).text()[0:3] in ['Re:', 'RE:']:
+            currentInboxRow, 1).data(Qt.UserRole).toPyObject())
+        if self.ui.tableWidgetInbox.item(currentInboxRow, 1).text()[0:3] in ['Re:', 'RE:']:
             self.ui.lineEditSubject.setText(
-                self.ui.tableWidgetInbox.item(currentInboxRow, 2).text())
+                self.ui.tableWidgetInbox.item(currentInboxRow, 1).text())
         else:
             self.ui.lineEditSubject.setText(
-                'Re: ' + self.ui.tableWidgetInbox.item(currentInboxRow, 2).text())
+                'Re: ' + self.ui.tableWidgetInbox.item(currentInboxRow, 1).text())
         self.ui.radioButtonSpecific.setChecked(True)
-        self.ui.tabWidget.setCurrentIndex(2)
+        self.ui.tabWidget.setCurrentIndex(1)
 
     def on_action_InboxAddSenderToAddressBook(self):
         currentInboxRow = self.ui.tableWidgetInbox.currentRow()
@@ -2939,7 +3387,7 @@ class MyForm(QtGui.QMainWindow):
             sqlExecute('''INSERT INTO addressbook VALUES (?,?)''',
                        '--New entry. Change label in Address Book.--',
                        addressAtCurrentInboxRow)
-            self.ui.tabWidget.setCurrentIndex(6)
+            self.ui.tabWidget.setCurrentIndex(4)
             self.ui.tableWidgetAddressBook.setCurrentCell(0, 0)
             self.statusBar().showMessage(_translate(
                 "MainWindow", "Entry added to the Address Book. Edit the label to your liking."))
@@ -2983,6 +3431,26 @@ class MyForm(QtGui.QMainWindow):
             self.statusBar().showMessage(_translate("MainWindow", "Write error."))
             
     def on_action_DraftSaveMessageAs(self):
+        currentInboxRow = self.ui.tableWidgetInbox.currentRow()
+        try:
+            subjectAtCurrentInboxRow = str(self.ui.tableWidgetInbox.item(currentInboxRow,2).text())
+        except:
+            subjectAtCurrentInboxRow = ''
+        defaultFilename = "".join(x for x in subjectAtCurrentInboxRow if x.isalnum()) + '.txt'
+        data = self.ui.tableWidgetInbox.item(currentInboxRow,2).data(Qt.UserRole).toPyObject()
+        filename = QFileDialog.getSaveFileName(self, _translate("MainWindow","Save As..."), defaultFilename, "Text files (*.txt);;All files (*.*)")
+        if filename == '':
+            return
+        try:
+            f = open(filename, 'w')
+            f.write( self.ui.tableWidgetInbox.item(currentInboxRow,2).data(Qt.UserRole).toPyObject() )
+            f.close()
+        except Exception, e:
+            sys.stderr.write('Write error: '+ e)
+            self.statusBar().showMessage(_translate("MainWindow", "Write error."))
+        
+        #    nur: commented code is Isra's original code for Draft tab; I copied it and changed for inbox elements;        
+        '''      
         currentDraftRow = self.ui.tableWidgetDraft.currentRow()
         try:
             subjectAtCurrentDraftRow = str(self.ui.tableWidgetDraft.item(currentDraftRow,2).text())
@@ -3000,14 +3468,32 @@ class MyForm(QtGui.QMainWindow):
         except Exception, e:
             sys.stderr.write('Write error: '+ e)
             self.statusBar().showMessage(_translate("MainWindow", "Write error."))
+        '''
 
     # Send item on the Sent tab to trash
     def on_action_SentTrash(self):
+        while self.ui.tableWidgetInbox.selectedIndexes() != []:
+            currentRow = self.ui.tableWidgetInbox.selectedIndexes()[0].row()
+            ackdataToTrash = str(self.ui.tableWidgetInbox.item(
+                currentRow, 3).data(Qt.UserRole).toPyObject())
+            sqlExecute('''UPDATE sent SET folder='trash' WHERE ackdata=?''', ackdataToTrash)
+            self.ui.textEditInboxMessage.setPlainText("")
+            self.ui.tableWidgetInbox.removeRow(currentRow)
+            self.statusBar().showMessage(_translate(
+                "MainWindow", "Moved items to trash. There is no user interface to view your trash, but it is still on disk if you are desperate to get it back."))
+        if currentRow == 0:
+            self.ui.tableWidgetInbox.selectRow(currentRow)
+        else:
+            self.ui.tableWidgetInbox.selectRow(currentRow - 1)
+# nur: orignal code
+    '''            
         while self.ui.tableWidgetSent.selectedIndexes() != []:
             currentRow = self.ui.tableWidgetSent.selectedIndexes()[0].row()
             ackdataToTrash = str(self.ui.tableWidgetSent.item(
                 currentRow, 3).data(Qt.UserRole).toPyObject())
-            sqlExecute('''UPDATE sent SET folder='trash' WHERE ackdata=?''', ackdataToTrash)
+    '''
+    #       sqlExecute('''UPDATE sent SET folder='trash' WHERE ackdata=?''', ackdataToTrash)
+    '''
             self.ui.textEditSentMessage.setPlainText("")
             self.ui.tableWidgetSent.removeRow(currentRow)
             self.statusBar().showMessage(_translate(
@@ -3016,18 +3502,37 @@ class MyForm(QtGui.QMainWindow):
             self.ui.tableWidgetSent.selectRow(currentRow)
         else:
             self.ui.tableWidgetSent.selectRow(currentRow - 1)
-    
+    '''
     ## ialqassem@masdar.ac.ae - Draft
     # Send item from the Draft tab to trash
     def on_action_DraftTrash(self):
+        self.statusBar().showMessage(_translate(
+                "MainWindow", ""))
+        while self.ui.tableWidgetInbox.selectedIndexes() != []:
+            currentRow = self.ui.tableWidgetInbox.selectedIndexes()[0].row()
+            ackdataToTrash = str(self.ui.tableWidgetInbox.item(
+                currentRow, 3).data(Qt.UserRole).toPyObject())
+            sqlExecute('''UPDATE sent SET folder='trash' WHERE folder='draft' and ackdata=?''', ackdataToTrash)
+            self.ui.textEditInboxMessage.setText("")
+            self.ui.tableWidgetInbox.removeRow(currentRow)
+            self.statusBar().showMessage(_translate(
+                "MainWindow", "Moved items to trash. There is no user interface to view your trash, but it is still on disk if you are desperate to get it back."))
+        if currentRow == 0:
+            self.ui.tableWidgetInbox.selectRow(currentRow)
+        else:
+            self.ui.tableWidgetInbox.selectRow(currentRow - 1)
+
+        # nur: commented code below originally for draft tab by Isra';
+        ''' #<--- uncomment
         self.statusBar().showMessage(_translate(
                 "MainWindow", ""))
         while self.ui.tableWidgetDraft.selectedIndexes() != []:
             currentRow = self.ui.tableWidgetDraft.selectedIndexes()[0].row()
             ackdataToTrash = str(self.ui.tableWidgetDraft.item(
                 currentRow, 3).data(Qt.UserRole).toPyObject())
-            sqlExecute('''UPDATE sent SET folder='trash' WHERE folder='draft' and ackdata=?''', ackdataToTrash)
-            self.ui.textEditDraftMessage.setText("")
+        ''' #<--- uncomment nur
+        #   sqlExecute('''UPDATE sent SET folder='trash' WHERE folder='draft' and ackdata=?''', ackdataToTrash) #<--- uncomment nur
+        ''' self.ui.textEditDraftMessage.setText("")
             self.ui.tableWidgetDraft.removeRow(currentRow)
             self.statusBar().showMessage(_translate(
                 "MainWindow", "Moved items to trash. There is no user interface to view your trash, but it is still on disk if you are desperate to get it back."))
@@ -3035,9 +3540,28 @@ class MyForm(QtGui.QMainWindow):
             self.ui.tableWidgetDraft.selectRow(currentRow)
         else:
             self.ui.tableWidgetDraft.selectRow(currentRow - 1)
-    
+        '''#<--- uncomment nur
     ## ialqassem@masdar.ac.ae - Draft
     def on_action_DraftContinueWritingMessage(self):
+        
+        # nur: I copied Isra's code and changed Draft to Inbox elements;
+        
+        # Get the selected row and copy the message details into 'Send' tab
+        currentRow = self.ui.tableWidgetInbox.selectedIndexes()[0].row()
+        self.ui.lineEditTo.setText(self.ui.tableWidgetInbox.item(
+             currentRow, 0).data(Qt.UserRole).toPyObject())
+        self.ui.labelFrom.setText(self.ui.tableWidgetInbox.item(
+             currentRow, 1).data(Qt.UserRole).toPyObject())
+        self.ui.textEditMessage.setText(self.ui.tableWidgetInbox.item(
+             currentRow, 2).data(Qt.UserRole).toPyObject())
+        self.ui.lineEditSubject.setText(str(self.ui.tableWidgetInbox.item(currentRow,2).text()))
+        # Update the value of the delete row index in order to delete this record if the user sends this message or saves it as draft again
+        self.deleteDraftRowIndex = currentRow
+        # Direct the user to send tab
+        self.ui.tabWidget.setCurrentIndex(1)        
+        
+        # nur: commented code below originally for draft tab by Isra';
+        '''
         # Get the selected row and copy the message details into 'Send' tab
         currentRow = self.ui.tableWidgetDraft.selectedIndexes()[0].row()
         self.ui.lineEditTo.setText(self.ui.tableWidgetDraft.item(
@@ -3051,11 +3575,11 @@ class MyForm(QtGui.QMainWindow):
         self.deleteDraftRowIndex = currentRow
         # Direct the user to send tab
         self.ui.tabWidget.setCurrentIndex(2)
-        
+        '''
 
     def on_action_ForceSend(self):
-        currentRow = self.ui.tableWidgetSent.currentRow()
-        addressAtCurrentRow = str(self.ui.tableWidgetSent.item(
+        currentRow = self.ui.tableWidgetInbox.currentRow()
+        addressAtCurrentRow = str(self.ui.tableWidgetInbox.item(
             currentRow, 0).data(Qt.UserRole).toPyObject())
         toRipe = decodeAddress(addressAtCurrentRow)[3]
         sqlExecute(
@@ -3067,13 +3591,42 @@ class MyForm(QtGui.QMainWindow):
             shared.UISignalQueue.put(('updateSentItemStatusByAckdata', (
                 ackdata, 'Overriding maximum-difficulty setting. Work queued.')))
         shared.workerQueue.put(('sendmessage', ''))
+        
+    #    nur: original code:
+    '''
+        currentRow = self.ui.tableWidgetSent.currentRow()
+        addressAtCurrentRow = str(self.ui.tableWidgetSent.item(
+            currentRow, 0).data(Qt.UserRole).toPyObject())
+        toRipe = decodeAddress(addressAtCurrentRow)[3]
+        sqlExecute(
+     '''
+    #      '''UPDATE sent SET status='forcepow' WHERE toripe=? AND status='toodifficult' and folder='sent' ''',
+    '''
+            toRipe)
+    '''
+    #   queryreturn = sqlQuery('''select ackdata FROM sent WHERE status='forcepow' ''')
+    '''
+        for row in queryreturn:
+            ackdata, = row
+            shared.UISignalQueue.put(('updateSentItemStatusByAckdata', (
+                ackdata, 'Overriding maximum-difficulty setting. Work queued.')))
+        shared.workerQueue.put(('sendmessage', ''))
+    '''
 
     def on_action_SentClipboard(self):
+        currentRow = self.ui.tableWidgetInbox.currentRow()
+        addressAtCurrentRow = str(self.ui.tableWidgetInbox.item(
+            currentRow, 0).data(Qt.UserRole).toPyObject())
+        clipboard = QtGui.QApplication.clipboard()
+        clipboard.setText(str(addressAtCurrentRow))
+    # nur: original code:
+    '''     
         currentRow = self.ui.tableWidgetSent.currentRow()
         addressAtCurrentRow = str(self.ui.tableWidgetSent.item(
             currentRow, 0).data(Qt.UserRole).toPyObject())
         clipboard = QtGui.QApplication.clipboard()
         clipboard.setText(str(addressAtCurrentRow))
+    '''
 
     # Group of functions for the Address Book dialog box
     def on_action_AddressBookNew(self):
@@ -3324,9 +3877,28 @@ class MyForm(QtGui.QMainWindow):
         
     ## ialqassem@masdar.ac.ae
     def on_context_menuDraft(self, point):
-        self.popMenuDraft.exec_(self.ui.tableWidgetDraft.mapToGlobal(point))
+        self.popMenuDraft.exec_(self.ui.tableWidgetInbox.mapToGlobal(point))
+        # self.popMenuDraft.exec_(self.ui.tableWidgetDraft.mapToGlobal(point))
 
     def on_context_menuSent(self, point):
+        self.popMenuSent = QtGui.QMenu(self)
+        self.popMenuSent.addAction(self.actionSentClipboard)
+        self.popMenuSent.addAction(self.actionTrashSentMessage)
+
+        # Check to see if this item is toodifficult and display an additional
+        # menu option (Force Send) if it is.
+        currentRow = self.ui.tableWidgetInbox.currentRow()
+        ackData = str(self.ui.tableWidgetInbox.item(
+            currentRow, 3).data(Qt.UserRole).toPyObject())
+        queryreturn = sqlQuery('''SELECT status FROM sent where ackdata=?''', ackData)
+        for row in queryreturn:
+            status, = row
+        if status == 'toodifficult':
+            self.popMenuSent.addAction(self.actionForceSend)
+        self.popMenuSent.exec_(self.ui.tableWidgetInbox.mapToGlobal(point))        
+        
+        # nur: original sent's code
+        '''
         self.popMenuSent = QtGui.QMenu(self)
         self.popMenuSent.addAction(self.actionSentClipboard)
         self.popMenuSent.addAction(self.actionTrashSentMessage)
@@ -3336,19 +3908,36 @@ class MyForm(QtGui.QMainWindow):
         currentRow = self.ui.tableWidgetSent.currentRow()
         ackData = str(self.ui.tableWidgetSent.item(
             currentRow, 3).data(Qt.UserRole).toPyObject())
-        queryreturn = sqlQuery('''SELECT status FROM sent where ackdata=?''', ackData)
-        for row in queryreturn:
+        '''
+        # queryreturn = sqlQuery('''SELECT status FROM sent where ackdata=?''', ackData) <-- uncomment this as well
+        '''                                    <-- uncomment this as well
+        for row in queryreturn:                                
             status, = row
         if status == 'toodifficult':
             self.popMenuSent.addAction(self.actionForceSend)
         self.popMenuSent.exec_(self.ui.tableWidgetSent.mapToGlobal(point))
-
+        '''
     def inboxSearchLineEditPressed(self):
-        searchKeyword = self.ui.inboxSearchLineEdit.text().toUtf8().data()
-        searchOption = self.ui.inboxSearchOptionCB.currentText().toUtf8().data()
-        self.ui.inboxSearchLineEdit.setText(QString(""))
-        self.ui.textEditInboxMessage.setPlainText(QString(""))
-        self.loadInbox(searchOption, searchKeyword)
+        index = self.ui.treeWidget.currentIndex();
+        word = self.ui.treeWidget.model().data(index).toString();
+        if word == 'Inbox':
+            searchKeyword = self.ui.inboxSearchLineEdit.text().toUtf8().data()
+            searchOption = self.ui.inboxSearchOptionCB.currentText().toUtf8().data()
+            self.ui.inboxSearchLineEdit.setText(QString(""))
+            self.ui.textEditInboxMessage.setPlainText(QString(""))
+            self.loadInbox(searchOption, searchKeyword)
+        elif word == 'Sent':
+            searchKeyword = self.ui.inboxSearchLineEdit.text().toUtf8().data()
+            searchOption = self.ui.inboxSearchOptionCB.currentText().toUtf8().data()
+            self.ui.inboxSearchLineEdit.setText(QString(""))
+            self.ui.textEditInboxMessage.setPlainText(QString(""))
+            self.loadSentForSearch(searchOption, searchKeyword)
+        elif word == 'Drafts':
+            searchKeyword = self.ui.inboxSearchLineEdit.text().toUtf8().data()
+            searchOption = self.ui.inboxSearchOptionCB.currentText().toUtf8().data()
+            self.ui.inboxSearchLineEdit.setText(QString(""))
+            self.ui.textEditInboxMessage.setPlainText(QString(""))
+            self.loadDraftForSearch(searchOption, searchKeyword)
 
     def sentSearchLineEditPressed(self):
         searchKeyword = self.ui.sentSearchLineEdit.text().toUtf8().data()
@@ -3356,7 +3945,7 @@ class MyForm(QtGui.QMainWindow):
         self.ui.sentSearchLineEdit.setText(QString(""))
         self.ui.textEditInboxMessage.setPlainText(QString(""))
         self.loadSent(searchOption, searchKeyword)
-    
+        
     ## ialqassem@masdar.ac    
     def draftSearchLineEditPressed(self):
         searchKeyword = self.ui.draftSearchLineEdit.text().toUtf8().data()
