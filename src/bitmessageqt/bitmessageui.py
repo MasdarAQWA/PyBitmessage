@@ -293,6 +293,7 @@ class Ui_MainWindow(object):
         self.gridLayout_2.addWidget(self.lineEditSubject, 4, 1, 1, 5)
         spacerItem1 = QtGui.QSpacerItem(20, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.gridLayout_2.addItem(spacerItem1, 3, 4, 1, 1)
+        '''
         self.cleanAllButton = QtGui.QPushButton(self.send)
         font = QtGui.QFont()
         font.setPointSize(10)
@@ -307,6 +308,7 @@ class Ui_MainWindow(object):
         self.spyButton.setFlat(True)
         self.spyButton.setLayoutDirection(2)
         self.gridLayout_2.addWidget(self.spyButton, 7,3,1,1)
+        '''
         self.pushButtonSend = QtGui.QPushButton(self.send)
         font = QtGui.QFont()
         font.setPointSize(10)
@@ -694,7 +696,7 @@ class Ui_MainWindow(object):
         self.label_2.setText(QtGui.QApplication.translate("MainWindow", "From:", None, QtGui.QApplication.UnicodeUTF8))
         self.radioButtonBroadcast.setText(QtGui.QApplication.translate("MainWindow", "Broadcast to everyone who is subscribed to your address", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButtonSend.setText(QtGui.QApplication.translate("MainWindow", "Send", None, QtGui.QApplication.UnicodeUTF8))
-        self.cleanAllButton.setText(QtGui.QApplication.translate("MainWindow", "Discard", None, QtGui.QApplication.UnicodeUTF8))
+        #self.cleanAllButton.setText(QtGui.QApplication.translate("MainWindow", "Discard", None, QtGui.QApplication.UnicodeUTF8))
         self.labelSendBroadcastWarning.setText(QtGui.QApplication.translate("MainWindow", "Be aware that broadcasts are only encrypted with your address. Anyone who knows your address can read them.", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.send), QtGui.QApplication.translate("MainWindow", "Send", None, QtGui.QApplication.UnicodeUTF8))
         self.sentSearchLineEdit.setPlaceholderText(QtGui.QApplication.translate("MainWindow", "Search", None, QtGui.QApplication.UnicodeUTF8))

@@ -165,7 +165,7 @@ class MyForm(QtGui.QMainWindow):
             "triggered()"), self.click_actionAbout)
         QtCore.QObject.connect(self.ui.actionHelp, QtCore.SIGNAL(
             "triggered()"), self.click_actionHelp)
-        QtCore.QObject.connect(self.ui.cleanAllButton, QtCore.SIGNAL("clicked()"), self.click_cleanAllButton)
+        #QtCore.QObject.connect(self.ui.cleanAllButton, QtCore.SIGNAL("clicked()"), self.click_cleanAllButton)
         
         QtCore.QObject.connect(self.ui.treeWidget, QtCore.SIGNAL("clicked()"), self.populateFolderList)
         QtCore.QObject.connect(self.ui.treeWidget, QtCore.SIGNAL("itemClicked ( QTreeWidgetItem *, int)"), self.populateFolderList)
@@ -2227,6 +2227,7 @@ class MyForm(QtGui.QMainWindow):
             if not enabled:
                 newItem.setTextColor(QtGui.QColor(128, 128, 128))
             self.ui.tableWidgetSubscriptions.setItem(0, 1, newItem)
+    
     def click_cleanAllButton(self):
         self.ui.radioButtonSpecific.setChecked(True)
         self.ui.radioButtonBroadcast.setChecked(False)
